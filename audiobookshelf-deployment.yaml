@@ -1,0 +1,43 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: audiobookshelf 
+  labels:
+    app: audiobookshelf
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: audiobookshelf
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: audiobookshelf
+    spec:
+      containers:
+      - name: audiobookshelf 
+        image: ghcr.io/advplyr/audiobookshelf:latest
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 13378
+          name: http
+        volumeMounts:
+        - name: k8s-pv02
+          mountPath: /config
+          subPath: audiobookshelf/config
+        - name: k8s-pv02
+          mountPath: /metadata
+          subPath: audiobookshelf/metadata
+        - name: media
+          mountPath: /audiobooks
+          subPath: audiobooks
+      volumes:
+      - name: k8s-pv02 
+        persistentVolumeClaim:
+          claimName: synology-k8s-pv02
+      - name: media
+        persistentVolumeClaim:
+          claimName: synology-media
